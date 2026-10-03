@@ -1,0 +1,5 @@
+/marigold-api
+/*.oci.tar
+__pycache__/
+*.pyc
+.DS_Store

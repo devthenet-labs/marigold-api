@@ -1,0 +1,41 @@
+name: publish images
+on:
+  workflow_run:
+    workflows: [test, agent image]
+    types: [completed]
+permissions: {}
+jobs:
+  # Runtime (preview) images, from PR heads and main commits. Off unless the
+  # repository variable PREVIEW_PUBLISH_ENABLED is 'true'.
+  runtime:
+    if: >-
+      vars.PREVIEW_PUBLISH_ENABLED == 'true' &&
+      github.event.workflow_run.name == 'test' &&
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_repository.id == github.event.repository.id
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: read
+      id-token: write
+    uses: ./.github/workflows/publish-runtime.yml
+    with:
+      run-id: ${{ github.event.workflow_run.id }}
+  # Agent toolchain images, from main only. Gated on its own variable,
+  # AGENT_PUBLISH_ENABLED, so an app without previews still publishes the
+  # image its agent runs in.
+  agent:
+    if: >-
+      vars.AGENT_PUBLISH_ENABLED == 'true' &&
+      github.event.workflow_run.name == 'agent image' &&
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event != 'pull_request' &&
+      github.event.workflow_run.head_repository.id == github.event.repository.id
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: read
+      id-token: write
+    uses: ./.github/workflows/publish-agent.yml
+    with:
+      run-id: ${{ github.event.workflow_run.id }}
