@@ -5,12 +5,18 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"regexp"
 	"time"
 )
 
 // greetingMessage is what GET /api/greeting says.
 const greetingMessage = "Hello from Marigold"
+
+// nameInput matches a visitor's name: 1-40 Unicode letters, spaces,
+// hyphens and apostrophes. Anything else is a 400.
+var nameInput = regexp.MustCompile(`^[\p{L} '-]{1,40}$`)
 
 // greeting is the body of GET /api/greeting.
 type greeting struct {
@@ -25,9 +31,20 @@ type greeting struct {
 // Anything else is a JSON 404.
 func newHandler(revision string, now func() time.Time) http.Handler {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/api/greeting", readOnly(func(w http.ResponseWriter, _ *http.Request) {
+	mux.HandleFunc("/api/greeting", readOnly(func(w http.ResponseWriter, r *http.Request) {
+		message := greetingMessage
+		if r.URL.Query().Has("name") {
+			name := r.URL.Query().Get("name")
+			if !nameInput.MatchString(name) {
+				writeJSON(w, http.StatusBadRequest, map[string]string{
+					"error": "name must be 1-40 letters, spaces, hyphens or apostrophes",
+				})
+				return
+			}
+			message = fmt.Sprintf("Hello, %s!", name)
+		}
 		writeJSON(w, http.StatusOK, greeting{
-			Message:  greetingMessage,
+			Message:  message,
 			ServedAt: now().UTC().Format(time.RFC3339),
 			Revision: revision,
 		})
