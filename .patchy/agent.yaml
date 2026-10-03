@@ -1,0 +1,3 @@
+# The image patchy's agent runs in for this repository: an immutable ECR tag,
+# published from main by the trusted agent publisher (see SECURITY.md).
+image: 377946145366.dkr.ecr.us-east-1.amazonaws.com/patchy/app-envs/marigold-api:toolchain-v1
