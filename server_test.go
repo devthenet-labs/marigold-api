@@ -45,6 +45,56 @@ func TestGreeting(t *testing.T) {
 	}
 }
 
+func TestGreetingWithName(t *testing.T) {
+	h := newHandler("test", fixedClock)
+	for _, tc := range []struct {
+		name, path, want string
+	}{
+		{"simple", "/api/greeting?name=Ada", "Hello, Ada!"},
+		{"hyphen and apostrophe", "/api/greeting?name=Mary-Jane%20O%27Brien", "Hello, Mary-Jane O'Brien!"},
+		{"forty characters", "/api/greeting?name=" + strings.Repeat("A", 40), "Hello, " + strings.Repeat("A", 40) + "!"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			w := serve(h, http.MethodGet, tc.path)
+			if w.Code != http.StatusOK {
+				t.Fatalf("status=%d body=%q", w.Code, w.Body.String())
+			}
+			var got greeting
+			if err := json.Unmarshal(w.Body.Bytes(), &got); err != nil || got.Message != tc.want {
+				t.Fatalf("message=%q error=%v, want %q", got.Message, err, tc.want)
+			}
+			assertHeaders(t, w)
+		})
+	}
+}
+
+func TestGreetingRejectsInvalidName(t *testing.T) {
+	h := newHandler("test", fixedClock)
+	for _, tc := range []struct {
+		name, path string
+	}{
+		{"digit", "/api/greeting?name=Ada1"},
+		{"symbol", "/api/greeting?name=%3Cscript%3E"},
+		{"too long", "/api/greeting?name=" + strings.Repeat("A", 41)},
+		{"empty", "/api/greeting?name="},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			w := serve(h, http.MethodGet, tc.path)
+			if w.Code != http.StatusBadRequest || w.Header().Get("Content-Type") != "application/json" {
+				t.Fatalf("status=%d type=%q", w.Code, w.Header().Get("Content-Type"))
+			}
+			var body map[string]string
+			if err := json.Unmarshal(w.Body.Bytes(), &body); err != nil {
+				t.Fatal(err)
+			}
+			if len(body) != 1 || body["error"] == "" {
+				t.Fatalf("body=%v", body)
+			}
+			assertHeaders(t, w)
+		})
+	}
+}
+
 func TestRoutes(t *testing.T) {
 	h := newHandler("test", fixedClock)
 	for _, tc := range []struct {
