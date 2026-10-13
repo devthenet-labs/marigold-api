@@ -28,6 +28,9 @@ jobs:
       ECR_REGISTRY: ${{ vars.ECR_REGISTRY }}
       IMAGE_REPOSITORY: ${{ vars.AGENT_IMAGE_REPOSITORY }}
       ROLE_ARN: ${{ vars.AGENT_ROLE_ARN }}
+      # Optional: the AWS KMS key the image is signed with. Empty leaves
+      # it unsigned and skips both cosign steps.
+      AGENT_SIGNING_KEY: ${{ vars.AGENT_SIGNING_KEY }}
     steps:
       - name: Checkout trusted publisher only, never PR source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -69,6 +72,11 @@ jobs:
           printf 'digest=%s\n' "$digest" >> "$GITHUB_OUTPUT"
       - name: Install the distribution's image-copy utility
         run: sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends skopeo
+      - name: Install cosign, only when the image is signed
+        if: env.AGENT_SIGNING_KEY != ''
+        uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
+        with:
+          cosign-release: v3.1.3
       - name: Obtain the agent role only after validation
         uses: aws-actions/configure-aws-credentials@cabfdba3510de1431bac9dba27511d97497fc100 # v5
         with:
@@ -82,3 +90,11 @@ jobs:
           IMAGE_SOURCE: ${{ steps.guard.outputs.source }}
           IMAGE_DIGEST: ${{ steps.image.outputs.digest }}
         run: bash .github/publish/copy-image.sh
+      # Runs on every publish with signing on, an already-published image
+      # included: that is how an image published before AGENT_SIGNING_KEY
+      # was set gets signed. An image that already verifies is skipped.
+      - name: Sign exactly the validated digest with the KMS key
+        if: env.AGENT_SIGNING_KEY != ''
+        env:
+          IMAGE_DIGEST: ${{ steps.image.outputs.digest }}
+        run: bash .github/publish/sign-image.sh
