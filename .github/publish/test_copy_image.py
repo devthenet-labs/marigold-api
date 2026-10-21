@@ -40,7 +40,7 @@ esac
 CONFIG = {
     "AWS_REGION": "us-east-1",
     "ECR_REGISTRY": "123456789012.dkr.ecr.us-east-1.amazonaws.com",
-    "IMAGE_REPOSITORY": "patchy/previews/example-app",
+    "IMAGE_REPOSITORY": "maul/previews/example-app",
     "ROLE_ARN": "arn:aws:iam::123456789012:role/example-app-runtime-push",
     "IMAGE_KIND": "runtime",
 }
@@ -106,7 +106,7 @@ class PublisherScriptTest(unittest.TestCase):
         self.assertEqual(self.tags(), {f"sha-{SHA}": DIGEST})
 
     def test_agent_publishes_the_toolchain_tag_from_main_only(self):
-        agent = {"IMAGE_KIND": "agent", "IMAGE_REPOSITORY": "patchy/app-envs/example-app",
+        agent = {"IMAGE_KIND": "agent", "IMAGE_REPOSITORY": "maul/app-envs/example-app",
                  "ROLE_ARN": "arn:aws:iam::123456789012:role/example-app-agent-push"}
         result = self.run_script("copy-image.sh", **agent)
         self.assertEqual(result.returncode, 0, result.stderr)
@@ -143,8 +143,8 @@ class PublisherScriptTest(unittest.TestCase):
                           {"ROLE_ARN": "arn:aws:iam::999999999999:role/example-app-runtime-push"},
                           {"ROLE_ARN": "arn:aws:iam::123456789012:user/someone"},
                           {"IMAGE_REPOSITORY": "single-segment"},
-                          {"IMAGE_REPOSITORY": "Patchy/Previews/App"},
-                          {"IMAGE_REPOSITORY": "patchy/previews/app:tag"}]:
+                          {"IMAGE_REPOSITORY": "Maul/Previews/App"},
+                          {"IMAGE_REPOSITORY": "maul/previews/app:tag"}]:
             with self.subTest(**overrides):
                 result = self.run_script("check-config.sh", **overrides)
                 self.assertNotEqual(result.returncode, 0)

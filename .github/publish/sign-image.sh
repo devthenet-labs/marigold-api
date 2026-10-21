@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Sign the published agent image with the AWS KMS key AGENT_SIGNING_KEY
-# names, so patchy's runner-image verifier (repositoryImages.cosignPublicKey)
+# names, so maul's runner-image verifier (repositoryImages.cosignPublicKey)
 # accepts it. It signs exactly IMAGE_DIGEST, the digest validate_oci.py
 # printed and copy-image.sh published, never a tag.
 #
@@ -23,7 +23,7 @@ fail() {
 [[ -n "${AGENT_SIGNING_KEY:-}" ]] || fail "AGENT_SIGNING_KEY is unset, so signing is off"
 [[ "$AGENT_SIGNING_KEY" =~ ^awskms:///[A-Za-z0-9/_:.-]+$ ]] || fail "AGENT_SIGNING_KEY must be an AWS KMS key URI"
 [[ "${ECR_REGISTRY:-}" =~ ^[0-9]{12}\.dkr\.ecr\.[a-z0-9-]+\.amazonaws\.com$ ]] || fail "ECR_REGISTRY must be an ECR registry host"
-[[ "${IMAGE_REPOSITORY:-}" =~ ^patchy/app-envs/[a-z0-9._-]+$ ]] || fail "IMAGE_REPOSITORY must be under patchy/app-envs/"
+[[ "${IMAGE_REPOSITORY:-}" =~ ^maul/app-envs/[a-z0-9._-]+$ ]] || fail "IMAGE_REPOSITORY must be under maul/app-envs/"
 image="$ECR_REGISTRY/$IMAGE_REPOSITORY@$IMAGE_DIGEST"
 
 # cosign reads registry credentials from DOCKER_CONFIG: a private one,
