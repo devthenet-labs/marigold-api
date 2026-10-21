@@ -34,7 +34,7 @@ IDs, the `main` ref, audience `sts.amazonaws.com` and its **own** `job_workflow_
 cannot assume the agent role, and neither role can write any other repository or reach Kubernetes, IAM or secrets.
 Because of that, a wrong repository variable can only make a publish fail.
 
-Changes to `.github/` and `.patchy/` need human review; patchy's intent changesets refuse both paths. These protections
+Changes to `.github/` and `.maul/` need human review; maul's intent changesets refuse both paths. These protections
 assume main's maintainers stay trusted.
 
 ## Repository variables
@@ -47,9 +47,9 @@ assume main's maintainers stay trusted.
 | `PUBLISH_OWNER_ID`         | the owning organisation's numeric ID                                         |
 | `AWS_REGION`               | the registry's region                                                        |
 | `ECR_REGISTRY`             | `<account>.dkr.ecr.<region>.amazonaws.com`                                   |
-| `RUNTIME_IMAGE_REPOSITORY` | the runtime ECR repository, e.g. `patchy/previews/<app>`                      |
+| `RUNTIME_IMAGE_REPOSITORY` | the runtime ECR repository, e.g. `maul/previews/<app>`                      |
 | `RUNTIME_ROLE_ARN`         | the runtime publisher role                                                   |
-| `AGENT_IMAGE_REPOSITORY`   | the agent ECR repository, e.g. `patchy/app-envs/<app>`                        |
+| `AGENT_IMAGE_REPOSITORY`   | the agent ECR repository, e.g. `maul/app-envs/<app>`                        |
 | `AGENT_ROLE_ARN`           | the agent publisher role                                                     |
 
 A skipped publisher is not a successful publication. To roll back, set the `*_PUBLISH_ENABLED` variables to anything

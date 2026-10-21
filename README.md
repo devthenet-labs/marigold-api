@@ -38,8 +38,8 @@ docker run --rm --read-only --cap-drop ALL --security-opt no-new-privileges \
 curl -s localhost:8080/api/greeting
 ```
 
-`.patchy/Dockerfile` is a different image: patchy's agent base plus the pinned Go toolchain, offline
-(`GOPROXY=off`), with no application source baked in. `.patchy/agent.yaml` names its immutable `toolchain-v1` tag, which
+`.maul/Dockerfile` is a different image: maul's agent base plus the pinned Go toolchain, offline
+(`GOPROXY=off`), with no application source baked in. `.maul/agent.yaml` names its immutable `toolchain-v1` tag, which
 the agent publisher pushes from main.
 
 ## CI and images
